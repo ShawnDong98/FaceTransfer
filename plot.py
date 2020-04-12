@@ -7,6 +7,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
+
 def draw_lines():
     state = torch.load("./models/state.pth")
 

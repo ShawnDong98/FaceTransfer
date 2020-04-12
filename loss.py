@@ -46,3 +46,5 @@ def D_loss(D, G, x, rec_img, latent_dim):
     return D_loss
 
 
+
+

@@ -2,6 +2,7 @@ import os
 import torch
 from torch.autograd import Variable
 
+
 def make_folder(path):
     if not os.path.exists(os.path.join(path)):
         os.makedirs(os.path.join(path))

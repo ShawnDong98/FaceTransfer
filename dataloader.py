@@ -7,6 +7,7 @@ import glob
 import numpy as np
 import cv2
 
+
 def umeyama( src, dst, estimate_scale ):
     """Estimate N-D similarity transformation with or without scaling.
     Parameters
