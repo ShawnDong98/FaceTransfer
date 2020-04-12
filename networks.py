@@ -12,9 +12,7 @@ from loss import *
 
 import time
 import datetime
-
 from utils import *
-
 import cv2
 
 def ConvBN(in_channel, out_channel, kernel=4, stride=1, padding=0):
