@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 class Self_Attn(nn.Module):
     def __init__(self, in_dim):
         super(Self_Attn, self).__init__()
