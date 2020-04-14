@@ -8,7 +8,7 @@ import numpy as np
 import cv2
 
 
-def umeyama( src, dst, estimate_scale ):
+def umeyama(src, dst, estimate_scale):
     """Estimate N-D similarity transformation with or without scaling.
     Parameters
     ----------
@@ -86,34 +86,37 @@ random_transform_args = {
     'random_flip': 0.4,
 }
 
-def random_transform( image, rotation_range, zoom_range, shift_range, random_flip ):
-    h,w = image.shape[0:2]
-    rotation = np.random.uniform( -rotation_range, rotation_range )
-    scale = np.random.uniform( 1 - zoom_range, 1 + zoom_range )
-    tx = np.random.uniform( -shift_range, shift_range ) * w
-    ty = np.random.uniform( -shift_range, shift_range ) * h
-    mat = cv2.getRotationMatrix2D( (w//2,h//2), rotation, scale )
-    mat[:,2] += (tx,ty)
-    result = cv2.warpAffine( image, mat, (w,h), borderMode=cv2.BORDER_REPLICATE)
-    if np.random.random() < random_flip:
-        result = result[:,::-1]
-    return result
 
+def random_transform(image, rotation_range, zoom_range, shift_range, random_flip):
+    h, w = image.shape[0:2]
+    rotation = np.random.uniform(-rotation_range, rotation_range)
+    scale = np.random.uniform(1 - zoom_range, 1 + zoom_range)
+    tx = np.random.uniform(-shift_range, shift_range) * w
+    ty = np.random.uniform(-shift_range, shift_range) * h
+    mat = cv2.getRotationMatrix2D((w//2, h//2), rotation, scale)
+    mat[:, 2] += (tx, ty)
+    result = cv2.warpAffine(
+        image, mat, (w, h), borderMode=cv2.BORDER_REPLICATE)
+    if np.random.random() < random_flip:
+        result = result[:, ::-1]
+    return result
 
 
 # get pair of random warped images from aligened face image
 def random_warp(image):
-    assert image.shape == (256,256,3)
-    range_ = np.linspace( 128-80, 128+80, 5 )
-    mapx = np.broadcast_to(range_, (5,5))
+    assert image.shape == (256, 256, 3)
+    range_ = np.linspace(128-80, 128+80, 5)
+    mapx = np.broadcast_to(range_, (5, 5))
     mapy = mapx.T
 
     # np.random.normal: loc: mean, scale: std
-    mapx = mapx + np.random.normal(size=(5,5), scale=5)
-    mapy = mapy + np.random.normal(size=(5,5), scale=5)
+    mapx = mapx + np.random.normal(size=(5, 5), scale=5)
+    mapy = mapy + np.random.normal(size=(5, 5), scale=5)
 
-    interp_mapx = cv2.resize(mapx, (160,160))[16:144,16:144].astype('float32')
-    interp_mapy = cv2.resize(mapy, (160,160))[16:144,16:144].astype('float32')
+    interp_mapx = cv2.resize(mapx, (160, 160))[
+        16:144, 16:144].astype('float32')
+    interp_mapy = cv2.resize(mapy, (320, 320))[
+        16:144, 16:144].astype('float32')
 
     warped_image = cv2.remap(image, interp_mapx, interp_mapy, cv2.INTER_LINEAR)
 
@@ -121,19 +124,19 @@ def random_warp(image):
     src_points = np.stack([mapx.ravel(), mapy.ravel()], axis=-1)
     # shape: (2, 5, 5) -> (5, 5, 2) -> (25, 2)
     # 左闭右开区间
-    dst_points = np.mgrid[0:129:32,0:129:32].T.reshape(-1,2)
+    dst_points = np.mgrid[0:129:32, 0:129:32].T.reshape(-1, 2)
     mat = umeyama(src_points, dst_points, True)[0:2]
 
     # 将原图又还原回来
-    target_image = cv2.warpAffine(image, mat, (128,128))
+    target_image = cv2.warpAffine(image, mat, (128, 128))
 
     return warped_image, target_image
+
 
 class Dataset(data.Dataset):
     def __init__(self, root, transforms=None):
         self.imgs = glob.glob(root+'/*')
         self.trans = transforms
-        
 
     def __getitem__(self, index):
         path = self.imgs[index]
@@ -148,6 +151,7 @@ class Dataset(data.Dataset):
     def __len__(self):
         return len(self.imgs)
 
+
 class Data_Loader():
     def __init__(self, img_size, img_path, batch_size):
         super(Data_Loader, self).__init__()
@@ -156,13 +160,12 @@ class Data_Loader():
         self.batch_size = batch_size
         self.trans = transforms.Compose(
             [
-                transforms.Resize((self.img_size, self.img_size)), 
+                transforms.Resize((self.img_size, self.img_size)),
                 transforms.ToTensor(),
                 transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
             ]
         )
         self.dataset = Dataset(img_path, self.trans)
-        
 
     def loader(self):
         loader = torch.utils.data.DataLoader(
@@ -189,8 +192,3 @@ class Data_Loader():
 # cv2.imshow("warped_image", warped_image)
 # cv2.imshow("target_image", target_image)
 # cv2.waitKey(0)
-
-
-
-
-
