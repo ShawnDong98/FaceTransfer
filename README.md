@@ -16,9 +16,10 @@ This repo is for academic learning.
 
 :white_check_mark: Self-Attention Mechanism(SAGAN)
 
-# To do list
+:x: Progressive Growing Architecture(PGGAN) (I discard this idea, because there is no need to build a progressive growing architecture for a ralative low resolution such as 128, 256, while it makes training process complex)
 
-:white_large_square: Progressive Growing Architecture(PGGAN)
+
+# To do list
 
 :white_large_square: Style-Based Generator Architecture(StyleGAN)
 
