@@ -1,11 +1,10 @@
 import torch
 
 import pandas as pd
-import numpy as np 
+import numpy as np
 
 import seaborn as sns
 import matplotlib.pyplot as plt
-
 
 
 def draw_lines():
@@ -16,7 +15,7 @@ def draw_lines():
     df3 = pd.DataFrame(state['g_src_loss'], columns=['g_src_loss'])
     df4 = pd.DataFrame(state['d_src_loss'], columns=['d_src_loss'])
 
-    f1=plt.figure()
+    f1 = plt.figure()
 
     f1.add_subplot(221)
 
@@ -36,7 +35,7 @@ def draw_lines():
     df33 = pd.DataFrame(state['g_dst_loss'], columns=['g_dst_loss'])
     df44 = pd.DataFrame(state['d_dst_loss'], columns=['d_dst_loss'])
 
-    f2=plt.figure()
+    f2 = plt.figure()
 
     f2.add_subplot(221)
 
@@ -51,6 +50,7 @@ def draw_lines():
     f2.add_subplot(224)
     sns.lineplot(data=df44)
 
-
     f1.savefig("./plot/src_losses.jpg")
     f2.savefig("./plot/dst_losses.jpg")
+
+    plt.close()
