@@ -208,11 +208,11 @@ class AE():
                       .format(elapsed, step + 1, self.config.total_iter, rec_src_loss, enc_src_loss, g_src_loss, d_src_loss, rec_dst_loss, enc_dst_loss, g_dst_loss, d_dst_loss))
 
             if (step + 1) % 10 == 0:
-                fake_images = self.G_src(fixed_z)
+                fake_images = self.G_src(fixed_z).detach()
                 save_image(denorm(fake_images.data),
                            os.path.join(self.config.sample_path, 'src_fake.png'))
 
-                fake_images = self.G_dst(fixed_z)
+                fake_images = self.G_dst(fixed_z).detach()
                 save_image(denorm(fake_images.data),
                            os.path.join(self.config.sample_path, 'dst_fake.png'))
 

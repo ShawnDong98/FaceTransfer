@@ -46,10 +46,12 @@ class Generator(nn.Module):
     def __init__(self, latent_dim=256):
         super(Generator, self).__init__()
 
+        self.ConstantInput = nn.Parameter(torch.zeros(1, latent_dim, 4, 4))
+
         self.layers = nn.ModuleList(
             [
                 # StyleConvBlock(latent_dim, 1024, 4, 1, 0),  # 4 x 4
-                StyleConvBlock(latent_dim, 512, 4, 1, 0),  # 8 x 8
+                StyleConvBlock(latent_dim, 512, 3, 1, 1),  # 8 x 8
                 StyleConvBlock(512, 256, 4, 2, 1),  # 16 x 16
                 StyleConvBlock(256, 128, 4, 2, 1),  # 32 x 32
                 StyleConvBlock(128, 64, 4, 2, 1),  # 64 x 64
@@ -67,8 +69,8 @@ class Generator(nn.Module):
         self.attn2 = Self_Attn(32)
 
     def forward(self, latent):
-        z = latent.unsqueeze(2).unsqueeze(3)
-        out = z
+        out = self.ConstantInput.repeat(latent.size(0), 1, 1, 1)
+        #print(out)
         # print("len_self_layers: ", len(self.layers))
         for i in range(len(self.layers)):
             if (i == len(self.layers)-2) or i == (len(self.layers)-1):
@@ -81,9 +83,10 @@ class Generator(nn.Module):
                     out = self.attn2(out)
             else:
                 out = self.layers[i](out, latent)
+                print(out.mean())
 
         out = self.last_layer(out)
-
+        
         return out
 
 
