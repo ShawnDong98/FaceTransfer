@@ -6,20 +6,12 @@ from math import sqrt
 from spectral import SpectralNorm
 
 
-class PixelNorm(nn.Module):
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, input):
-        return input / torch.sqrt(torch.mean(input ** 2, dim=1, keepdim=True) + 1e-8)
-
-
 def ConvBN(in_channel, out_channel, kernel=4, stride=1, padding=0):
     return nn.Sequential(
         SpectralNorm(nn.Conv2d(in_channel, out_channel,
                                kernel, stride, padding)),
         nn.BatchNorm2d(out_channel),
-        nn.LeakyReLU(0.2)
+        nn.LeakyReLU(0.1)
     )
 
 
@@ -27,7 +19,7 @@ def Conv(in_channel, out_channel, kernel=4, stride=1, padding=0):
     return nn.Sequential(
         SpectralNorm(nn.Conv2d(in_channel, out_channel,
                                kernel, stride, padding)),
-        nn.LeakyReLU(0.2)
+        nn.LeakyReLU(0.1)
     )
 
 
