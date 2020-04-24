@@ -5,65 +5,75 @@ from math import sqrt
 
 from spectral import SpectralNorm
 
+def adjust_learning_rate(learning_rate, learning_rate_decay, optimizer, epoch):
+    """Sets the learning rate to the initial LR multiplied by learning_rate_decay(set 0.98, usually) every epoch"""
+    learning_rate = learning_rate * (learning_rate_decay ** epoch)
 
-def ConvBN(in_channel, out_channel, kernel=4, stride=1, padding=0):
-    return nn.Sequential(
-        SpectralNorm(nn.Conv2d(in_channel, out_channel,
-                               kernel, stride, padding)),
-        nn.BatchNorm2d(out_channel),
-        nn.LeakyReLU(0.1)
-    )
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = learning_rate
 
-
-def Conv(in_channel, out_channel, kernel=4, stride=1, padding=0):
-    return nn.Sequential(
-        SpectralNorm(nn.Conv2d(in_channel, out_channel,
-                               kernel, stride, padding)),
-        nn.LeakyReLU(0.1)
-    )
+    return learning_rate
 
 
-def ConvTrans(in_channel, out_channel, kernel=4, stride=1, padding=0):
-    return nn.Sequential(
-        SpectralNorm(
-            nn.ConvTranspose2d(in_channel, out_channel,
-                               kernel, stride, padding)
-        ),
-    )
 
-
-class AdaIN(nn.Module):
-    def __init__(self, in_channel, style_dim):
+class PixelShuffler(nn.Module):
+    def __init__(self, size=(2, 2)):
         super().__init__()
+        self.size = tuple(size)
 
-        self.norm = nn.InstanceNorm2d(in_channel)
-        self.style = nn.Linear(style_dim, in_channel * 2)
+    def forward(self, input):
+        N, C, H, W = input.size()
+        rH, rW = self.size
+        oH, oW = H * rH, W * rW
+        oC = C // (rH * rW)
 
-        self.style.bias.data[:in_channel] = 1
-        self.style.bias.data[in_channel:] = 0
-
-    def forward(self, input, style):
-        style = self.style(style).unsqueeze(2).unsqueeze(3)
-        gamma, beta = style.chunk(2, 1)
-
-        out = self.norm(input)
-        out = gamma * out + beta
+        out = input.reshape(N, rH, rW, oC, H, W)
+        out = out.permute(0, 3, 4, 1, 5, 2)
+        out = out.reshape(N, oC, oH, oW)
 
         return out
 
 
-class StyleConvBlock(nn.Module):
-    def __init__(self, in_channel, out_channel, kernel_size=4, stride=1, padding=0, style_dim=256):
-        super().__init__()
 
-        self.conv = ConvTrans(in_channel, out_channel,
-                              kernel_size, stride, padding)
-        self.adain = AdaIN(out_channel, style_dim)
-        self.lrelu = nn.LeakyReLU(0.2)
+def Conv(c_in, c_out, kernel_size=4, stride=2, padding=1):
+    return nn.Sequential(
+        nn.Conv2d(c_in, c_out, kernel_size=kernel_size, stride=stride, padding=padding),
+        nn.BatchNorm2d(c_out),
+        nn.LeakyReLU(0.2, inplace=True)
+    )
 
-    def forward(self, input, style):
-        out = self.conv(input)
-        out = self.lrelu(out)
-        out = self.adain(out, style)
 
-        return out
+def upscale(c_in, c_out, kernel_size=3, stride=1, padding=1):
+    return nn.Sequential(
+        nn.Conv2d(c_in, c_out * 4, kernel_size=kernel_size, stride=stride, padding=padding),
+        nn.BatchNorm2d(c_out * 4),
+        nn.LeakyReLU(0.2, inplace=True),
+        PixelShuffler()
+    )
+
+
+
+
+if __name__ == "__main__":
+    t = torch.randn(3, 3, 2, 2)
+    net = test()
+    t1 = net(t)
+
+
+    target = torch.ones((3, 5, 4, 4))
+    optim = torch.optim.Adam(net.parameters(), 0.01, [0, 0.999])
+
+    critic = nn.L1Loss()
+
+    loss = critic(t1, target)
+
+    optim.zero_grad()
+    loss.backward()
+    optim.step()
+
+    for name, parms in net.named_parameters():
+	    print('net-->name:', name, '-->grad_requirs:', parms.requires_grad, '--werms.datight', torch.mean(parms.data), ' -->grad_value:', torch.mean(parms.grad))
+
+
+
+

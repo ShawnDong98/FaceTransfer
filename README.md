@@ -18,10 +18,11 @@ This repo is for academic learning.
 
 :x: Progressive Growing Architecture(PGGAN) (I discard this idea, because there is no need to build a progressive growing architecture for a ralative low resolution such as 128, 256, while it makes training process complex)
 
-:white_check_mark: Style-Based Generator Architecture(StyleGAN)(Not official)
+:white_check_mark: Style-Based Generator Architecture(StyleGAN)
 
 
 # To do list
+
 
 :white_large_square: SPADE Block(GauGAN)
 
